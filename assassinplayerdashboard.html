@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assassin Game</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #000;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .form-section {
+      background-color: #222;
+      padding: 20px;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      width: 300px;
+      margin-bottom: 20px;
+    }
+    label {
+      text-align: center;
+      width: 100%;
+      margin-bottom: 10px;
+      display: block;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #fff;
+      border-radius: 4px;
+      background-color: #444;
+      color: #fff;
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #555;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+      font-family: 'Courier New', monospace;
+    }
+    button:hover {
+      background-color: #444;
+    }
+    .output {
+      margin-top: 3px;
+      padding: 10px;
+      border: 1px solid #fff;
+      background-color: #333;
+      border-radius: 4px;
+      font-weight: bold;
+      white-space: pre-wrap;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Loading Styles */
+    .loading {
+      display: none;
+      color: #fff;
+      font-weight: bold;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #fff;
+      background-color: #333;
+      border-radius: 4px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Specific loading indicators */
+    #codenameLoading, #targetLoading, #eliminateLoading {
+      display: none;
+    }
+
+    /* Create a simple spinner animation for loading */
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    /* Keyframe animation for spinner */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="container">
+    <h2>Player Dashboard</h2>
+    
+    <!-- Input for codename -->
+    <div class="form-section" id="codenameSection">
+      <label for="codename">Input your codename:</label>
+      <input type="text" id="codename" required>
+      <button onclick="verifyCitizen()">Verify</button>
+      <div id="codenameMessage" class="output"></div>
+      <div id="codenameLoading" class="loading">
+        <div class="spinner"></div>
+        Loading...
+      </div>
+    </div>
+
+    <!-- Options to find target or eliminate player -->
+    <div class="form-section" id="actionSection" style="display: none;">
+      <button onclick="findTarget()">Find My Target</button>
+      <button onclick="eliminateTarget()">Eliminate a Player</button>
+      <div id="actionMessage" class="output"></div>
+      <div id="targetLoading" class="loading">
+        <div class="spinner"></div>
+        Loading...
+      </div>
+    </div>
+
+    <!-- Eliminate player input -->
+    <div class="form-section" id="eliminateSection" style="display: none;">
+      <label for="targetCodename">Input target codename:</label>
+      <input type="text" id="targetCodename" required>
+      <button onclick="confirmEliminate()">Confirm Elimination</button>
+      <div id="eliminateMessage" class="output"></div>
+      <div id="eliminateLoading" class="loading">
+        <div class="spinner"></div>
+        Loading...
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbw9vZKwXIibxqpR1T3-wDij0-YFuu-25NG-VXhyY2vOkiXmfPuVA06JpABYvKZBW1F0Eg/exec';
+
+    async function verifyCitizen() {
+      const codename = document.getElementById('codename').value;
+
+      // Show loading spinner for the codename submission
+      document.getElementById('codenameLoading').style.display = 'block';
+
+      const res = await fetch(`${scriptURL}?action=verifyCitizen1&codename=${codename}`);
+      const data = await res.json();
+
+      // Hide the loading spinner
+      document.getElementById('codenameLoading').style.display = 'none';
+
+      document.getElementById('codenameMessage').textContent = data.message;
+
+      if (data.success) {
+        document.getElementById('actionSection').style.display = 'block';
+      }
+    }
+
+    async function findTarget() {
+      const codename = document.getElementById('codename').value;
+
+      // Show the loading spinner for finding target
+      document.getElementById('targetLoading').style.display = 'block';
+
+      const res = await fetch(`${scriptURL}?action=findMyTarget&codename=${codename}`);
+      const data = await res.json();
+
+      // Hide the loading spinner
+      document.getElementById('targetLoading').style.display = 'none';
+
+      document.getElementById('actionMessage').textContent = data.message;
+    }
+
+    async function eliminateTarget() {
+      document.getElementById('eliminateSection').style.display = 'block';
+    }
+
+    async function confirmEliminate() {
+      const codename = document.getElementById('codename').value;
+      const targetCodename = document.getElementById('targetCodename').value;
+
+      // Show the loading spinner for confirming elimination
+      document.getElementById('eliminateLoading').style.display = 'block';
+
+      const res = await fetch(`${scriptURL}?action=eliminateTarget&codename=${codename}&targetCodename=${targetCodename}`);
+      const data = await res.json();
+
+      // Hide the loading spinner
+      document.getElementById('eliminateLoading').style.display = 'none';
+
+      document.getElementById('eliminateMessage').textContent = data.message;
+    }
+  </script>
+</body>
+</html>
